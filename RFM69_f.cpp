@@ -31,15 +31,7 @@
 #include <RFM69_f.h>
 #include <RFM69registers.h>
 
-#if defined(__AVR_ATtiny84__) || defined(__AVR_ATtiny44__) // Use USI based SPI on tinys
-
-  #include "USISPI.h"
-
-#else // arduinos: use the default library functions
-
-  #include <SPI.h>
-
-#endif
+#include "SPI_common.h"
 
 volatile byte RFM69::DATA[RF69_MAX_DATA_LEN];
 volatile byte RFM69::_mode;       // current transceiver state
@@ -417,9 +409,13 @@ void RFM69::select() {
   // save current SPI settings
   _SPCR = SPCR;
   _SPSR = SPSR;
-  SPI.setDataMode(SPI_MODE0);
-  SPI.setBitOrder(MSBFIRST);
-  SPI.setClockDivider(SPI_CLOCK_DIV4);
+  SPCR = (SPCR & ~0x0C) | 0x00;  // SPI.setDataMode(SPI_MODE0); (last hex number is the mode)
+  SPCR &= ~(_BV(DORD)); // this is for MSBFIRST; LSBFIRST would be SPCR |= _BV(DORD);
+  // clock divider: look this up in the datasheet
+  // DIV4: use 0x00   here: V
+  // DIV2: use 0x04   here: v
+  SPCR = (SPCR & ~0x03) | (0x00 & 0x03);
+  SPSR = (SPSR & ~0x01) | (0x00 & 0x01);
 #endif
   digitalWrite(_slaveSelectPin, LOW);
 }
