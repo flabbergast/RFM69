@@ -30,7 +30,16 @@
 // **********************************************************************************
 #include <RFM69_f.h>
 #include <RFM69registers.h>
-#include <SPI.h>
+
+#if defined(__AVR_ATtiny84__) || defined(__AVR_ATtiny44__) // Use USI based SPI on tinys
+
+  #include "USISPI.h"
+
+#else // arduinos: use the default library functions
+
+  #include <SPI.h>
+
+#endif
 
 volatile byte RFM69::DATA[RF69_MAX_DATA_LEN];
 volatile byte RFM69::_mode;       // current transceiver state
@@ -87,6 +96,7 @@ bool RFM69::initialize(byte freqBand, byte nodeID, byte networkID)
   };
 
   pinMode(_slaveSelectPin, OUTPUT);
+  digitalWrite(_slaveSelectPin, HIGH);
   SPI.begin();
   
   do writeReg(REG_SYNCVALUE1, 0xaa); while (readReg(REG_SYNCVALUE1) != 0xaa);
@@ -280,8 +290,6 @@ void RFM69::sendFrame(byte toAddress, const void* buffer, byte bufferSize, bool 
 }
 
 void RFM69::interruptHandler() {
-  //pinMode(4, OUTPUT);
-  //digitalWrite(4, 1);
   if (_mode == RF69_MODE_RX && (readReg(REG_IRQFLAGS2) & RF_IRQFLAGS2_PAYLOADREADY))
   {
     //RSSI = readRSSI();
@@ -404,22 +412,27 @@ void RFM69::writeReg(byte addr, byte value)
 /// Select the transceiver
 void RFM69::select() {
   noInterrupts();
-  //save current SPI settings
+#if defined(__AVR_ATtiny84__) || defined(__AVR_ATtiny44__) // tiny doesn't set SPI settings like this
+#else // set SPI settings if not on tiny
+  // save current SPI settings
   _SPCR = SPCR;
   _SPSR = SPSR;
-  //set RFM69 SPI settings
   SPI.setDataMode(SPI_MODE0);
   SPI.setBitOrder(MSBFIRST);
-  SPI.setClockDivider(SPI_CLOCK_DIV4); //decided to slow down from DIV2 after SPI stalling in some instances, especially visible on mega1284p when RFM69 and FLASH chip both present
+  SPI.setClockDivider(SPI_CLOCK_DIV4);
+#endif
   digitalWrite(_slaveSelectPin, LOW);
 }
 
 /// UNselect the transceiver chip
 void RFM69::unselect() {
   digitalWrite(_slaveSelectPin, HIGH);
+#if defined(__AVR_ATtiny84__) || defined(__AVR_ATtiny44__)
+#else
   //restore SPI settings to what they were before talking to RFM69
   SPCR = _SPCR;
   SPSR = _SPSR;
+#endif
   interrupts();
 }
 

@@ -45,6 +45,11 @@
 #elif defined(__AVR_ATmega32U4__)
   #define RF69_IRQ_PIN          3
   #define RF69_IRQ_NUM          0
+#elif defined(__AVR_ATtiny84__) || defined(__AVR_ATtiny44__)
+  #define RF69_IRQ_PIN          2 // PB2/INT0
+  #define RF69_IRQ_NUM          0
+  #undef RF69_SPI_CS
+  #define RF69_SPI_CS           1 // PB1
 #endif
 
 
@@ -138,6 +143,7 @@ class RFM69 {
     void setHighPowerRegs(bool onOff);
     void select();
     void unselect();
+
 };
 
 #endif
