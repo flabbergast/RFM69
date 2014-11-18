@@ -28,8 +28,8 @@
 // Please maintain this license information along with authorship
 // and copyright notices in any redistribution of this code
 // **********************************************************************************
-#ifndef RFM69_h
-#define RFM69_h
+#ifndef RFM69_f_h
+#define RFM69_f_h
 #include <Arduino.h>            //assumes Arduino IDE v1.0 or greater
 
 #define RF69_MAX_DATA_LEN         61 // to take advantage of the built in AES/CRC we want to limit the frame size to the internal FIFO size (66 bytes - 3 bytes overhead)
