@@ -1,3 +1,15 @@
+RFM69_f Library
+-----------------
+
+Pretty much the original LowPowerLab's library, modified to work on
+attiny84 (e.g. [JeeNode
+Micro](http://jeelabs.net/projects/hardware/wiki/JeeNode_Micro) with
+RFM69CW).
+
+<br />
+
+Original RFM69 README begins here:
+
 RFM69 Library
 ----------------
 By Felix Rusu (felix@lowpowerlab.com)
